@@ -42,7 +42,7 @@ ollama serve
 ```text
 Frontend (index.html)
    ↕
-Backend (Flask - icc_fixed.py)
+Backend (Flask - ICC_logic.py)
    ↕
 Ollama (phi3:latest) — Local LLM
 Kokoro TTS (Docker)
