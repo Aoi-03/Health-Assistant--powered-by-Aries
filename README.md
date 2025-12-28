@@ -28,7 +28,7 @@ ollama serve
 
 ##  Features
 
--  **AI Chat** – Emotional + medical context detection using a local LLM (Phi-3)
+-  **AI Chat** – Emotional + medical context detection using a local LLM (Phi-3 or gemini-3-pro)
 -  **Medicine Price Search** – Scrapes 1mg, PharmEasy, and NetMeds for live price comparison
 -  **Nearby Hospitals/Pharmacies** – Uses Overpass API (OpenStreetMap) to find nearby facilities
 -  **TTS Output** – Real-time Kokoro voice response (via Docker)
