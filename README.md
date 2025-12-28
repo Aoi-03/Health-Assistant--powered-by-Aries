@@ -15,7 +15,7 @@ Used to run **Kokoro TTS** (text-to-speech engine).
 - After installation, make sure **Docker Desktop** is running in the background.
 
 ###  2️⃣ **Ollama**
-Used to run the **local LLM (Phi-3)** for natural conversation.  
+Used to run the **local LLM (Phi-3 or gemini-3-pro)** for natural conversation.  
 - Download Ollama from: [https://ollama.com/download](https://ollama.com/download)  
 - Once installed, run these commands:
 
