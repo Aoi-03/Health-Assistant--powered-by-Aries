@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from typing import List, Dict, Optional
 import statistics
 
+# ----- basic config -----
 OLLAMA_URL = "http://localhost:11434/api/generate"
 KOKORO_TTS_URL = "http://localhost:8880/v1/audio/speech"
 VOICE = "af_bella"
@@ -24,12 +25,13 @@ SYSTEM_PROMPT_BASE = (
 
 OVERPASS_URL = "https://overpass-api.de/api/interpreter"
 
+# ---- logging ----
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 app = Flask(__name__)
 CORS(app)
 
-
+# ---- simple memory (file) ----
 MEMORY_FILE = "aries_memory.json"
 
 def load_memory(limit=50):
@@ -61,31 +63,38 @@ def save_memory_entry(user_text, ai_text, state, confidence):
     except Exception as e:
         logging.warning("Failed to save memory: %s", e)
 
+# ---- FIXED state detector with MUCH MORE CONSERVATIVE thresholds ----
+
+# CRITICAL: Only truly life-threatening phrases
 CRITICAL_PATTERNS = [
     r"\b(?:i want to|going to|will|planning to)\s+(?:kill myself|end my life|commit suicide|take my life)\b",
     r"\b(?:suicide|suicidal thoughts|want to die)\b",
     r"\b(?:hanging|overdose|jump off|shoot myself)\b"
 ]
 
+# MEDICAL: Only clear physical symptoms requiring medical attention
 MEDICAL_PATTERNS = [
     r"\b(?:severe|unbearable|extreme|intense)\s+(?:pain|bleeding|vomiting)\b",
     r"\b(?:chest pain|heart attack|stroke|seizure|difficulty breathing|can't breathe)\b",
     r"\b(?:broken bone|fracture|deep cut|severe burn)\b",
-    r"\b(?:high fever|temperature over|fever\s+\d{3})\b",  
+    r"\b(?:high fever|temperature over|fever\s+\d{3})\b",  # Only high fevers
     r"\b(?:uncontrolled bleeding|heavy bleeding|blood in)\b"
 ]
 
+# CARE: Emotional distress but not emergency
 CARE_PATTERNS = [
     r"\b(?:feeling|i feel|i am|i'm)\s+(?:depressed|anxious|sad|lonely|stressed|overwhelmed)\b",
     r"\b(?:depression|anxiety|panic attack|mental health)\b",
     r"\b(?:can't cope|struggling|having a hard time)\b"
 ]
 
+# Nearby/location keywords
 NEARBY_KEYWORDS = re.compile(
     r"\b(?:near|nearest|nearby|closest|where (?:is|are).+hospital|find.+hospital|hospital near|clinic near|pharmacy near|medical store|chemist)\b",
     re.IGNORECASE
 )
 
+# Medicine keywords
 MEDICINE_KEYWORDS = re.compile(
     r"\b(?:medicine|tablet|capsule|syrup|injection|drug|medication|price|cost|buy|"
     r"paracetamol|dolo|crocin|aspirin|ibuprofen|amoxicillin|azithromycin|"
@@ -100,31 +109,37 @@ def detect_state(text):
     """
     t = text.lower()
     
+    # Initialize scores
     critical_score = 0
     medical_score = 0
     care_score = 0
     
+    # Check CRITICAL patterns (must match complete phrase)
     for pattern in CRITICAL_PATTERNS:
         if re.search(pattern, t):
-            critical_score += 2.0  
+            critical_score += 2.0  # Strong weight for critical
     
+    # Check MEDICAL patterns (require severe modifiers)
     for pattern in MEDICAL_PATTERNS:
         if re.search(pattern, t):
             medical_score += 1.5
     
+    # Check CARE patterns (emotional but not emergency)
     for pattern in CARE_PATTERNS:
         if re.search(pattern, t):
             care_score += 1.0
     
+    # Simple symptom words WITHOUT severe modifiers = CASUAL, not MEDICAL
+    # This prevents "headache" or "fever" alone from triggering medical mode
     simple_symptoms = ['headache', 'fever', 'cold', 'cough', 'tired', 'stomach ache']
     has_simple_symptom = any(symptom in t for symptom in simple_symptoms)
     has_severe_modifier = any(word in t for word in ['severe', 'unbearable', 'extreme', 'intense', 'can\'t', 'unable'])
     
     if has_simple_symptom and not has_severe_modifier:
-       
+        # Downgrade medical score for simple symptoms
         medical_score = max(0, medical_score - 1.0)
     
-   
+    # Decision logic with STRICT thresholds
     if critical_score >= 2.0:
         return "CRITICAL_MODE", min(0.95, 0.7 + (critical_score * 0.1))
     
@@ -134,9 +149,10 @@ def detect_state(text):
     if care_score >= 1.0:
         return "CARE_MODE", min(0.85, 0.5 + (care_score * 0.1))
     
-  
+    # Default to CASUAL for everything else
     return "CASUAL", 0.3
 
+# ---- prompt builder ----
 def build_prompt(user_message, state, confidence):
     instructions = ""
     if state == "CASUAL":
@@ -172,6 +188,7 @@ def build_prompt(user_message, state, confidence):
     )
     return prompt
 
+# ---- LLM + TTS helpers ----
 def generate_llm_response(prompt):
     payload = {"model": "phi3:latest", "prompt": prompt, "stream": False}
     try:
@@ -193,6 +210,7 @@ def generate_audio_base64(text):
         logging.warning("TTS error: %s", e)
         return None
 
+# ---- Overpass / Nearby helpers ----
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371000
     phi1 = math.radians(lat1)
@@ -304,6 +322,7 @@ def recommended_action_for_state(state, confidence):
     
     return (False, "")
 
+# ---- Medicine price scraping ----
 def extract_medicine_name(text: str) -> Optional[str]:
     patterns = [
         r"(?:price|cost|buy|find|get|need|looking for)\s+(?:of\s+)?([a-zA-Z0-9\s-]+?)(?:\s+(?:tablet|medicine|capsule|syrup|mg|near me)|\?|$)",
@@ -318,6 +337,7 @@ def extract_medicine_name(text: str) -> Optional[str]:
             if len(med_name) > 2 and med_name.lower() not in ['the', 'for', 'and', 'this', 'that']:
                 return med_name
     
+    # Known medicine names fallback
     known_meds = ['paracetamol', 'dolo', 'crocin', 'azithromycin', 'ibuprofen', 'aspirin', 'amoxicillin']
     for med in known_meds:
         if re.search(rf"\b{med}\b", text, re.IGNORECASE):
@@ -430,6 +450,7 @@ def get_medicine_prices(medicine: str) -> Dict:
     except Exception as e:
         logging.debug("PharmEasy failed: %s", e)
 
+    # Fallback demo data if scrapers fail
     if not all_results:
         all_results = [
             {
@@ -501,7 +522,8 @@ def find_nearby_pharmacies_with_medicine(lat: float, lon: float, medicine: str, 
         "pharmacies": pharmacies,
         "total_found": len(pharmacies)
     }
-    
+
+# ---- API Routes ----
 
 @app.route("/", methods=["GET"])
 def home():
@@ -581,6 +603,7 @@ def chat():
 
     logging.info("USER: %s", user_text)
 
+    # 1) Check for medicine query FIRST (before state detection)
     medicine_name = None
     if MEDICINE_KEYWORDS.search(user_text):
         medicine_name = extract_medicine_name(user_text)
@@ -610,22 +633,28 @@ def chat():
                 "recommended_action": ""
             })
 
+    # 2) Detect state (FIXED - more conservative)
     state, confidence = detect_state(user_text)
     logging.info("Detected state=%s confidence=%.2f", state, confidence)
 
+    # 3) Build prompt
     prompt = build_prompt(user_text, state, confidence)
 
+    # 4) Get LLM response
     reply = generate_llm_response(prompt)
     logging.info("ARIES_REPLY: %s", reply[:200])
 
+    # 5) Determine if escalation needed (ONLY for high-confidence critical/medical)
     escalate, action_text = recommended_action_for_state(state, confidence)
 
+    # 6) Check if nearby lookup needed
     want_nearby = False
     if escalate or NEARBY_KEYWORDS.search(user_text):
         want_nearby = True
 
     nearest = None
     
+    # Only ask for location if we actually need it
     if want_nearby and (lat is None or lon is None):
         return jsonify({
             "reply": reply,
@@ -638,6 +667,7 @@ def chat():
             "need_location": True
         })
 
+    # Get nearby places if we have location and it's needed
     if want_nearby and lat is not None and lon is not None:
         try:
             nr = overpass_nearby(lat, lon, radius=5000, limit=5)
@@ -645,8 +675,11 @@ def chat():
                 nearest = nr["places"][0]
         except Exception as e:
             logging.warning("Nearby lookup failed: %s", e)
-    audio_b64 = generate_audio_base64(reply) if escalate else None
 
+    # 7) Generate audio for all replies
+    audio_b64 = generate_audio_base64(reply)
+
+    # 8) Save memory
     try:
         save_memory_entry(user_text, reply, state, confidence)
     except Exception:
@@ -680,5 +713,4 @@ def speak():
 
 if __name__ == "__main__":
     logging.info("Starting Aries server on 0.0.0.0:5000")
-
     app.run(host="0.0.0.0", port=5000, debug=False)
