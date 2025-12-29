@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aries - Health Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+    .header p {
+      opacity: 0.9;
+      font-size: 0.95em;
+    }
+    .tabs {
+      display: flex;
+      background: #f5f5f5;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .tab {
+      flex: 1;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      background: #f5f5f5;
+      border: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .tab.active {
+      background: white;
+      border-bottom: 3px solid #667eea;
+      color: #667eea;
+    }
+    .tab:hover {
+      background: #efefef;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .chat-area {
+      padding: 20px;
+      max-height: 500px;
+      overflow-y: auto;
+      background: #f8f9fa;
+    }
+    .message {
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 12px;
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .user-message {
+      background: #e3f2fd;
+      margin-left: 20%;
+      border-left: 4px solid #2196F3;
+    }
+    .ai-message {
+      background: #f3e5f5;
+      margin-right: 20%;
+      border-left: 4px solid #9c27b0;
+    }
+    .banner {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .banner-critical {
+      background: #ffebee;
+      border-left: 5px solid #f44336;
+      color: #c62828;
+    }
+    .banner-medical {
+      background: #fff3e0;
+      border-left: 5px solid #ff9800;
+      color: #e65100;
+    }
+    .banner-care {
+      background: #e8f5e9;
+      border-left: 5px solid #4caf50;
+      color: #2e7d32;
+    }
+    .location-info {
+      background: #e3f2fd;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-size: 0.9em;
+      color: #1565c0;
+    }
+    .nearest-place {
+      background: white;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 2px solid #4caf50;
+    }
+    .nearest-place h4 {
+      color: #2e7d32;
+      margin-bottom: 8px;
+    }
+    .nearest-place a {
+      display: inline-block;
+      margin-top: 8px;
+      color: #1976d2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nearest-place a:hover {
+      text-decoration: underline;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .status-open {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+    .status-closed {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+    .status-unknown {
+      background: #e0e0e0;
+      color: #666;
+    }
+    
+    /* Medicine Price Cards */
+    .medicine-results {
+      padding: 20px;
+      background: #f8f9fa;
+    }
+    .price-summary {
+      background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .price-summary h3 {
+      margin-bottom: 15px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+    .summary-item {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .summary-item .label {
+      font-size: 0.85em;
+      opacity: 0.9;
+      margin-bottom: 5px;
+    }
+    .summary-item .value {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    .medicine-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+    }
+    .medicine-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+    .medicine-card.best-deal {
+      border: 3px solid #4caf50;
+      position: relative;
+    }
+    .best-deal-badge {
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      background: #4caf50;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.85em;
+    }
+    .medicine-card h4 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 15px 0;
+    }
+    .price {
+      font-size: 2em;
+      font-weight: bold;
+      color: #4caf50;
+    }
+    .pharmacy-badge {
+      display: inline-block;
+      padding: 5px 12px;
+      background: #e3f2fd;
+      color: #1976d2;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9em;
+    }
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .stars {
+      color: #ffa726;
+      font-size: 1.2em;
+    }
+    .reviews {
+      color: #666;
+      font-size: 0.9em;
+    }
+    .buy-button {
+      display: inline-block;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    .buy-button:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+    }
+    .medicine-search {
+      padding: 20px;
+      background: white;
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1em;
+    }
+    .search-box input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .search-btn {
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .search-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+    .search-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .disclaimer {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 15px;
+      margin: 20px;
+      border-radius: 8px;
+      font-size: 0.9em;
+      color: #e65100;
+    }
+    
+    .input-area {
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+    }
+    textarea {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      font-size: 1em;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+      transition: border-color 0.3s;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    button {
+      flex: 1;
+      padding: 15px;
+      font-size: 1em;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .send-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .send-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .clear-btn {
+      background: #f5f5f5;
+      color: #666;
+    }
+    .clear-btn:hover {
+      background: #e0e0e0;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #667eea;
+    }
+    .loading.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Health Assistant - powered by Aries</h1>
+      <p>Chat support • Medicine prices • Emergency help</p>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('chat')">Chat</button>
+      <button class="tab" onclick="switchTab('medicine')">Medicine Prices</button>
+    </div>
+    
+    <!-- Chat Tab -->
+    <div id="chatTab" class="tab-content active">
+      <div class="chat-area" id="chatArea">
+        <div class="message ai-message">
+          <strong>Aries:</strong> Hi! I'm here to help with health questions, find nearby hospitals, and compare medicine prices. What can I help you with today?
+          <br><br>Try: "What's the price of paracetamol?" or "Find nearest hospital"
+        </div>
+      </div>
+      
+      <div class="loading" id="loading">
+        <p>Aries is thinking...</p>
+      </div>
+      
+      <div class="input-area">
+        <textarea 
+          id="userInput" 
+          placeholder="Type your message... (e.g., 'price of dolo 650' or 'I have a headache')"
+          onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendMessage();}"
+        ></textarea>
+        <div class="button-group">
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send Message</button>
+          <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Medicine Price Tab -->
+    <div id="medicineTab" class="tab-content">
+      <div class="medicine-search">
+        <h3>Search Medicine Prices</h3>
+        <div class="search-box">
+          <input 
+            type="text" 
+            id="medicineSearch" 
+            placeholder="Enter medicine name (e.g., Paracetamol, Dolo 650, Crocin)"
+            onkeydown="if(event.key==='Enter'){searchMedicine();}"
+          />
+          <button class="search-btn" id="searchBtn" onclick="searchMedicine()">Search</button>
+        </div>
+      </div>
+      
+      <div class="loading" id="medicineLoading">
+        <p>Searching prices...</p>
+      </div>
+      
+      <div id="medicineResults"></div>
+      
+      <div class="disclaimer">
+        <strong>Important:</strong> Prices are indicative. Always consult a doctor before taking medicines. Prescription medicines require valid prescription.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SERVER_URL = 'http://127.0.0.1:5000';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      
+      if (tab === 'chat') {
+        document.querySelector('.tab:nth-child(1)').classList.add('active');
+        document.getElementById('chatTab').classList.add('active');
+      } else {
+        document.querySelector('.tab:nth-child(2)').classList.add('active');
+        document.getElementById('medicineTab').classList.add('active');
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const msg = input.value.trim();
+      
+      if (!msg) {
+        alert("Please type a message first.");
+        return;
+      }
+
+      const sendBtn = document.getElementById('sendBtn');
+      sendBtn.disabled = true;
+      input.disabled = true;
+      document.getElementById('loading').classList.add('active');
+
+      addMessage('user', msg);
+      input.value = '';
+
+      try {
+        let payload = { message: msg };
+        let res = await fetch(`${SERVER_URL}/chat`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        
+        if (!res.ok) {
+          throw new Error(`Server error: ${res.status}`);
+        }
+        
+        let data = await res.json();
+        
+        // Check if it's a medicine query
+        if (data.medicine_data) {
+          displayMedicineResults(data.medicine_data);
+          switchTab('medicine');
+          addMessage('ai', data.reply + "\n\n(Check the Medicine Prices tab for detailed comparison)");
+        } else {
+          showReply(data);
+        }
+
+        // Handle location request ONLY if explicitly needed
+        if (data && data.need_location && !data.nearest) {
+          if (!navigator.geolocation) {
+            addMessage('system', 'Location not available. Please type your city or pincode.');
+          } else {
+            addMessage('system', 'Requesting location to find nearby facilities...');
+            
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+              const lat = pos.coords.latitude;
+              const lon = pos.coords.longitude;
+              
+              let retry = { message: msg, lat: lat, lon: lon };
+              let r2 = await fetch(`${SERVER_URL}/chat`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify(retry)
+              });
+              
+              if (!r2.ok) {
+                throw new Error(`Server error: ${r2.status}`);
+              }
+              
+              let d2 = await r2.json();
+              showReply(d2, true);
+            }, (err) => {
+              addMessage('system', `Location error: ${err.message}. You can type your city instead.`);
+            }, { timeout: 10000 });
+          }
+        }
+      } catch (error) {
+        addMessage('error', `Error: ${error.message}. Check if server is running at ${SERVER_URL}`);
+      } finally {
+        sendBtn.disabled = false;
+        input.disabled = false;
+        document.getElementById('loading').classList.remove('active');
+        input.focus();
+      }
+    }
+    
+    async function searchMedicine() {
+      const input = document.getElementById('medicineSearch');
+      const medicine = input.value.trim();
+      
+      if (!medicine) return alert("Enter a medicine name");
+      
+      const btn = document.getElementById('searchBtn');
+      btn.disabled = true;
+      document.getElementById('medicineLoading').classList.add('active');
+      document.getElementById('medicineResults').innerHTML = '';
+      
+      try {
+        const res = await fetch(`${SERVER_URL}/medicine/prices`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ medicine })
+        });
+        
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        
+        const data = await res.json();
+        
+        if (data.ok) {
+          displayMedicineResults(data);
+        } else {
+          document.getElementById('medicineResults').innerHTML = 
+            `<div class="medicine-search"><p style="color: #d32f2f;">${data.error}</p></div>`;
+        }
+      } catch (error) {
+        document.getElementById('medicineResults').innerHTML = 
+          `<div class="medicine-search"><p style="color: #d32f2f;">Error: ${error.message}</p></div>`;
+      } finally {
+        btn.disabled = false;
+        document.getElementById('medicineLoading').classList.remove('active');
+      }
+    }
+    
+    function displayMedicineResults(data) {
+      const container = document.getElementById('medicineResults');
+      
+      if (!data.summary) {
+        container.innerHTML = '<div class="medicine-search"><p>No results found</p></div>';
+        return;
+      }
+      
+      const summary = data.summary;
+      const results = data.results;
+      
+      let html = `
+        <div class="medicine-results">
+          <div class="price-summary">
+            <h3>${escapeHtml(data.medicine)}</h3>
+            <div class="summary-grid">
+              <div class="summary-item">
+                <div class="label">Best Price</div>
+                <div class="value">₹${summary.min_price}</div>
+              </div>
+              <div class="summary-item">
+                <div class="label">Average</div>
+                <div class="value">₹${summary.avg_price}</div>
+              </div>
+              <div class="summary-item">
+                <div class="label">Max Price</div>
+                <div class="value">₹${summary.max_price}</div>
+              </div>
+              <div class="summary-item">
+                <div class="label">Options</div>
+                <div class="value">${summary.total_options}</div>
+              </div>
+            </div>
+          </div>
+      `;
+      
+      results.forEach((item, index) => {
+        const isBest = index === 0;
+        const stars = '⭐'.repeat(Math.round(item.rating));
+        
+        html += `
+          <div class="medicine-card ${isBest ? 'best-deal' : ''}">
+            ${isBest ? '<div class="best-deal-badge">Best Deal</div>' : ''}
+            <h4>${escapeHtml(item.name)}</h4>
+            <div class="price-row">
+              <div class="price">₹${item.price}</div>
+              <span class="pharmacy-badge">${escapeHtml(item.pharmacy)}</span>
+            </div>
+            ${item.rating > 0 ? `
+              <div class="rating">
+                <span class="stars">${stars}</span>
+                <span class="reviews">${item.rating} (${item.reviews} reviews)</span>
+              </div>
+            ` : ''}
+            <a href="${item.url}" target="_blank" class="buy-button">
+              🛒 Buy from ${escapeHtml(item.pharmacy)}
+            </a>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function showReply(data, replaceLastAi = false) {
+      if (!data) {
+        addMessage('error', "No response from server");
+        return;
+      }
+
+      let html = `<strong>Aries:</strong> ${escapeHtml(data.reply)}`;
+      
+      // Only show emergency banners for CRITICAL or MEDICAL modes with escalation
+      if (data.escalate && data.recommended_action && 
+          (data.state === 'CRITICAL_MODE' || data.state === 'MEDICAL_MODE')) {
+        const bannerClass = data.state === 'CRITICAL_MODE' ? 'banner-critical' : 'banner-medical';
+        html += `<div class="banner ${bannerClass}"><strong>⚠️</strong> ${escapeHtml(data.recommended_action)}</div>`;
+      }
+
+      if (data.nearest) {
+        const place = data.nearest;
+        const statusClass = place.opening_status === 'open' ? 'status-open' :
+                           place.opening_status === 'closed' ? 'status-closed' : 'status-unknown';
+        const statusLabel = place.opening_status === 'open' ? '✅ Open' :
+                           place.opening_status === 'closed' ? '🔒 Closed' : '❓ Unknown';
+        
+        html += `
+          <div class="nearest-place">
+            <h4>📍 ${escapeHtml(place.name)}</h4>
+            <p><strong>Type:</strong> ${escapeHtml(place.amenity)}</p>
+            <p><strong>Distance:</strong> ${place.distance_m}m (~${(place.distance_m/1000).toFixed(2)}km)</p>
+            <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${statusLabel}</span></p>
+            ${place.phone ? `<p><strong>Phone:</strong> ${escapeHtml(place.phone)}</p>` : ''}
+            <a href="${place.google_maps}" target="_blank">🗺️ Open in Google Maps →</a>
+          </div>
+        `;
+      }
+
+      if (replaceLastAi) {
+        const messages = document.querySelectorAll('.ai-message');
+        if (messages.length > 0) {
+          messages[messages.length - 1].innerHTML = html;
+        }
+      } else {
+        addMessageRaw('ai', html);
+      }
+
+      if (data.audio) {
+        try {
+          new Audio('data:audio/mp3;base64,' + data.audio).play().catch(() => {});
+        } catch (e) {}
+      }
+
+      scrollToBottom();
+    }
+
+    function addMessage(type, text) {
+      const html = type === 'user' ? `<strong>You:</strong> ${escapeHtml(text)}` :
+                   type === 'system' ? `<em>${escapeHtml(text)}</em>` :
+                   type === 'error' ? `<strong style="color: #d32f2f;">Error:</strong> ${escapeHtml(text)}` :
+                   escapeHtml(text);
+      addMessageRaw(type, html);
+    }
+
+    function addMessageRaw(type, html) {
+      const chatArea = document.getElementById('chatArea');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type === 'user' ? 'user-message' : 'ai-message'}`;
+      messageDiv.innerHTML = html;
+      chatArea.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    function clearChat() {
+      if (confirm('Clear chat history?')) {
+        document.getElementById('chatArea').innerHTML = `
+          <div class="message ai-message">
+            <strong>Aries:</strong> Hi! I'm here to help with health questions, find nearby hospitals, and compare medicine prices. What can I help you with today?
+          </div>
+        `;
+      }
+    }
+
+    function scrollToBottom() {
+      const chatArea = document.getElementById('chatArea');
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    window.onload = () => {
+      document.getElementById('userInput').focus();
+    };
+  </script>
+</body>
+</html>
