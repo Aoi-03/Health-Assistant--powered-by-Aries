@@ -1,0 +1,16 @@
+{
+  "name": "aries-health-assistant",
+  "version": "1.0.0",
+  "description": "Aries Health Assistant - Frontend",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve -s .",
+    "build": "echo 'No build needed for static HTML'"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

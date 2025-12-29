@@ -1,0 +1,40 @@
+# Environment variables (contains secrets)
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Memory files
+aries_memory.json
+
+# Node modules (if any)
+node_modules/
+
+# Build files
+dist/
+build/
