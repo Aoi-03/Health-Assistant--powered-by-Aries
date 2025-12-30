@@ -399,6 +399,64 @@
     .loading.active {
       display: block;
     }
+    .deployment-info {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 15px;
+      margin: 20px;
+      border-radius: 8px;
+      font-size: 0.9em;
+      color: #2e7d32;
+    }
+    .location-info {
+      background: #e3f2fd;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      font-size: 0.9em;
+      color: #1565c0;
+    }
+    .nearest-place {
+      background: white;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 2px solid #4caf50;
+    }
+    .nearest-place h4 {
+      color: #2e7d32;
+      margin-bottom: 8px;
+    }
+    .nearest-place a {
+      display: inline-block;
+      margin-top: 8px;
+      color: #1976d2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .nearest-place a:hover {
+      text-decoration: underline;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .status-open {
+      background: #c8e6c9;
+      color: #2e7d32;
+    }
+    .status-closed {
+      background: #ffcdd2;
+      color: #c62828;
+    }
+    .status-unknown {
+      background: #e0e0e0;
+      color: #666;
+    }
   </style>
 </head>
 <body>
@@ -435,6 +493,7 @@
         <div class="button-group">
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send Message</button>
           <button class="clear-btn" onclick="clearChat()">Clear Chat</button>
+          <button class="clear-btn" id="voiceBtn" onclick="toggleVoice()">🎤 Voice On</button>
         </div>
       </div>
     </div>
@@ -468,6 +527,9 @@
 
   <script>
     const SERVER_URL = 'https://web-production-8866a.up.railway.app';
+    
+    // Voice control
+    let voiceEnabled = true;
 
     function switchTab(tab) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -712,6 +774,9 @@
         } catch (e) {}
       }
 
+      // Browser TTS - Aries speaks her reply
+      speakText(data.reply);
+
       scrollToBottom();
     }
 
@@ -753,8 +818,171 @@
       return div.innerHTML;
     }
 
+    // Browser TTS function - Aries speaks using browser's speech synthesis with natural voice
+    function speakText(text) {
+      // Only speak if voice is enabled
+      if (!voiceEnabled) return;
+      
+      // Check if browser supports speech synthesis
+      if ('speechSynthesis' in window) {
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+        
+        // Create speech utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Configure voice settings for more natural Aries voice
+        utterance.rate = 0.85;       // Slower, more thoughtful pace
+        utterance.pitch = 1.2;       // Slightly higher pitch, caring tone
+        utterance.volume = 0.9;      // Clear volume
+        
+        // Try to find the best available voice
+        const voices = window.speechSynthesis.getVoices();
+        
+        // Priority order for natural-sounding voices
+        const preferredVoices = [
+          // English voices (most natural)
+          'Microsoft Zira - English (United States)',
+          'Microsoft Hazel - English (Great Britain)', 
+          'Google UK English Female',
+          'Google US English Female',
+          'Alex', // macOS
+          'Samantha', // macOS
+          'Victoria', // macOS
+          'Fiona', // macOS
+          // Fallback to any female voice
+          'female',
+          // Generic patterns
+          'woman', 'zira', 'hazel', 'susan', 'karen', 'emma'
+        ];
+        
+        let selectedVoice = null;
+        
+        // Try to find preferred voices in order
+        for (const preferred of preferredVoices) {
+          selectedVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes(preferred.toLowerCase()) ||
+            (voice.gender && voice.gender.toLowerCase() === 'female')
+          );
+          if (selectedVoice) break;
+        }
+        
+        // If no preferred voice found, try any English female voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(voice => 
+            voice.lang.startsWith('en') && 
+            (voice.name.toLowerCase().includes('female') || 
+             voice.name.toLowerCase().includes('woman'))
+          );
+        }
+        
+        // Final fallback: any English voice
+        if (!selectedVoice) {
+          selectedVoice = voices.find(voice => voice.lang.startsWith('en'));
+        }
+        
+        if (selectedVoice) {
+          utterance.voice = selectedVoice;
+          console.log(`🎤 Using voice: ${selectedVoice.name} (${selectedVoice.lang})`);
+        }
+        
+        // Add some personality with pauses and emphasis
+        let processedText = text;
+        
+        // Add natural pauses
+        processedText = processedText.replace(/\. /g, '. '); // Pause after sentences
+        processedText = processedText.replace(/\, /g, ', '); // Slight pause after commas
+        processedText = processedText.replace(/\? /g, '? '); // Pause after questions
+        processedText = processedText.replace(/\! /g, '! '); // Pause after exclamations
+        
+        // Emphasize important words
+        processedText = processedText.replace(/\b(important|urgent|emergency|immediately|serious)\b/gi, 
+          (match) => `<emphasis level="strong">${match}</emphasis>`);
+        
+        utterance.text = processedText;
+        
+        // Add event listeners for better control
+        utterance.onstart = () => {
+          console.log('🎤 Aries started speaking');
+        };
+        
+        utterance.onend = () => {
+          console.log('🎤 Aries finished speaking');
+        };
+        
+        utterance.onerror = (event) => {
+          console.log('🎤 Speech error:', event.error);
+        };
+        
+        // Speak the text
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+    
+    function toggleVoice() {
+      voiceEnabled = !voiceEnabled;
+      const btn = document.getElementById('voiceBtn');
+      if (voiceEnabled) {
+        btn.textContent = '🎤 Voice On';
+        btn.style.background = '#e8f5e9';
+        btn.style.color = '#2e7d32';
+        
+        // Test the voice when enabled
+        speakText("Voice enabled. I'm Aries, ready to help you.");
+      } else {
+        btn.textContent = '🔇 Voice Off';
+        btn.style.background = '#ffcdd2';
+        btn.style.color = '#c62828';
+        // Stop any current speech
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      }
+    }
+    
+    // Initialize voices and test voice quality
+    function initializeVoices() {
+      if ('speechSynthesis' in window) {
+        // Load voices
+        const voices = window.speechSynthesis.getVoices();
+        
+        if (voices.length > 0) {
+          console.log('🎤 Available voices:');
+          voices.forEach((voice, index) => {
+            console.log(`${index}: ${voice.name} (${voice.lang}) ${voice.gender || ''}`);
+          });
+          
+          // Find and log the best voice
+          const bestVoice = voices.find(voice => 
+            voice.name.toLowerCase().includes('zira') ||
+            voice.name.toLowerCase().includes('hazel') ||
+            (voice.lang.startsWith('en') && voice.name.toLowerCase().includes('female'))
+          );
+          
+          if (bestVoice) {
+            console.log(`🎤 Best voice selected: ${bestVoice.name}`);
+          }
+        }
+      }
+    }
+
+    // Load voices when available (some browsers load them asynchronously)
+    window.speechSynthesis.onvoiceschanged = function() {
+      initializeVoices();
+    };
+
     window.onload = () => {
       document.getElementById('userInput').focus();
+      
+      // Initialize voices
+      setTimeout(initializeVoices, 100);
+      
+      // Welcome message with voice
+      setTimeout(() => {
+        if (voiceEnabled) {
+          speakText("Hello! I'm Aries, your health assistant. I'm ready to help you with health questions and medicine information.");
+        }
+      }, 1000);
     };
   </script>
 </body>
