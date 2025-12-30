@@ -1,22 +1,22 @@
-# 🏥 Aries Health Assistant - Powered by AI
+# Aries Health Assistant - Powered by AI
 
 **Aries** is an intelligent health assistant that provides caring, contextual health advice with natural voice interaction. Built with **HuggingFace Phi-3**, **Flask**, and **Browser TTS** for a complete health support experience.
 
 ---
 
-## ✨ **Major Features**
+## **Major Features**
 
-- 🤖 **Intelligent AI Chat** - Varied, contextual responses with emotional understanding
-- 💊 **Medicine Price Comparison** - Real-time price comparison across multiple pharmacies  
-- 🏥 **Nearby Medical Facilities** - Find hospitals, clinics, and pharmacies with location services
-- 🎤 **Natural Voice Interaction** - High-quality text-to-speech with female voice selection
-- 🧠 **Smart Memory System** - Remembers conversations and avoids repetitive responses
-- 📱 **Mobile Responsive** - Works seamlessly on all devices
-- 🔒 **Privacy Focused** - Secure deployment with environment variable protection
+-  **Intelligent AI Chat** - Varied, contextual responses with emotional understanding
+   **Medicine Price Comparison** - Real-time price comparison across multiple pharmacies  
+   **Nearby Medical Facilities** - Find hospitals, clinics, and pharmacies with location services
+-  **Natural Voice Interaction** - High-quality text-to-speech with female voice selection
+-  **Smart Memory System** - Remembers conversations and avoids repetitive responses
+-  **Mobile Responsive** - Works seamlessly on all devices
+-  **Privacy Focused** - Secure deployment with environment variable protection
 
 ---
 
-## 🚀 **Quick Deploy (15 minutes)**
+## **Quick Deploy (15 minutes)**
 
 ### **Step 1: Get HuggingFace Token**
 1. Go to [HuggingFace](https://huggingface.co/settings/tokens)
@@ -44,7 +44,7 @@
 
 ---
 
-## 🧪 **Test Your Deployment**
+## **Test Your Deployment**
 
 ### **Backend Test**
 ```bash
@@ -62,42 +62,42 @@ Visit your Vercel URL and try:
 
 ---
 
-## 📁 **Project Structure**
+## **Project Structure**
 
 ```
-├── app.py              # 🧠 Smart AI backend with varied responses
-├── index.html          # 🎤 Frontend with natural voice TTS
-├── requirements.txt    # 📦 Python dependencies
-├── runtime.txt         # 🐍 Python version for Railway
-├── Procfile           # 🚀 Railway deployment config
-├── package.json       # 📱 Vercel frontend config
-├── .gitignore         # 🔒 Security (excludes .env)
-└── README.md          # 📖 This documentation
+├── app.py              # Smart AI backend with varied responses
+├── index.html          # Frontend with natural voice TTS
+├── requirements.txt    # Python dependencies
+├── runtime.txt         # Python version for Railway
+├── Procfile            # Railway deployment config
+├── package.json        # Vercel frontend config
+├── .gitignore          # Security (excludes .env)
+└── README.md           # This documentation
 ```
 
 ---
 
-## 🎯 **What Makes Aries Special**
+## **What Makes Aries Special**
 
-### **🤖 Intelligent AI Responses**
+### **Intelligent AI Responses**
 - **No Repetition**: Multiple response variations for each scenario
 - **Context-Aware**: Different advice for headaches, fever, anxiety, etc.
 - **Memory-Smart**: Avoids repeating recent responses
 - **Caring Personality**: Empathetic, supportive, and helpful tone
 
-### **🎤 Natural Voice Experience**
+### **Natural Voice Experience**
 - **Premium Voice Selection**: Microsoft Zira, Hazel, Google Female voices
 - **Optimized Settings**: Perfect rate, pitch, and volume for caring tone
 - **Smart Fallbacks**: Automatically finds best available voice
 - **Voice Controls**: Easy toggle with visual feedback
 
-### **💊 Medicine Price Intelligence**
+### **Medicine Price Intelligence**
 - **Multi-Pharmacy Search**: Compares prices across 1mg, PharmEasy, Netmeds
 - **Smart Detection**: Automatically detects medicine queries
 - **Best Deal Highlighting**: Shows cheapest options first
 - **Direct Purchase Links**: One-click access to pharmacy websites
 
-### **🏥 Location Services**
+### **Location Services**
 - **Nearby Facilities**: Hospitals, clinics, pharmacies within radius
 - **Real-Time Data**: Uses OpenStreetMap for accurate information
 - **Google Maps Integration**: Direct navigation links
@@ -105,7 +105,7 @@ Visit your Vercel URL and try:
 
 ---
 
-## 🛠️ **Local Development**
+## **Local Development**
 
 ### **Backend Setup**
 ```bash
@@ -136,7 +136,7 @@ python test_local.py
 
 ---
 
-## 🔧 **Advanced Features**
+## **Advanced Features**
 
 ### **State Detection System**
 - **CASUAL**: Regular conversations and general health questions
@@ -158,7 +158,7 @@ python test_local.py
 
 ---
 
-## 🔒 **Security & Privacy**
+## **Security & Privacy**
 
 - **Environment Variables**: Sensitive tokens stored securely
 - **CORS Protection**: Configured for safe cross-origin requests
@@ -167,7 +167,7 @@ python test_local.py
 
 ---
 
-## 📊 **Performance & Reliability**
+## **Performance & Reliability**
 
 - **Smart Fallbacks**: Works even when external APIs fail
 - **Error Handling**: Graceful degradation for all scenarios
@@ -176,7 +176,7 @@ python test_local.py
 
 ---
 
-## 🆘 **Troubleshooting**
+## **Troubleshooting**
 
 ### **Backend Issues**
 - Check Railway logs for errors
@@ -195,7 +195,7 @@ python test_local.py
 
 ---
 
-## 🌟 **What Users Say**
+## **What Users Say**
 
 *"Aries feels like talking to a real health assistant who actually cares!"*
 
@@ -205,7 +205,7 @@ python test_local.py
 
 ---
 
-## 📞 **Support**
+## **Support**
 
 Having issues? Check these resources:
 1. **Railway Logs**: Project → Deployments → View Logs
@@ -215,7 +215,7 @@ Having issues? Check these resources:
 
 ---
 
-## 🎉 **Ready to Deploy?**
+## **Ready to Deploy?**
 
 Your Aries Health Assistant is ready for production! 
 
