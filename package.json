@@ -1,16 +1,13 @@
 {
-  "name": "aries-health-assistant",
+  "name": "aries-health-assistant-frontend",
   "version": "1.0.0",
-  "description": "Aries Health Assistant - Frontend",
+  "description": "Aries Health Assistant - Frontend (Static HTML)",
   "main": "index.html",
   "scripts": {
-    "start": "serve -s .",
-    "build": "echo 'No build needed for static HTML'"
+    "start": "echo 'Static HTML - no build needed'",
+    "build": "echo 'Static HTML - no build needed'"
   },
-  "dependencies": {
-    "serve": "^14.2.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
+  "keywords": ["health", "assistant", "ai", "tts", "medicine"],
+  "author": "Aoi-03",
+  "license": "MIT"
 }

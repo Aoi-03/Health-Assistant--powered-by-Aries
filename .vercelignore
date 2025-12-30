@@ -1,0 +1,19 @@
+# Exclude backend files from Vercel deployment
+app.py
+requirements.txt
+runtime.txt
+Procfile
+.env
+aries_memory.json
+
+# Exclude development files
+test_*.py
+test_*.html
+*.md
+.git/
+.vscode/
+
+# Keep only frontend files
+!index.html
+!package.json
+!vercel.json
