@@ -1,6 +1,6 @@
 # Aries Health Assistant - Powered by AI
 
-**Aries** is an intelligent health assistant that provides caring, contextual health advice with natural voice interaction. Built with **HuggingFace Phi-3**, **Flask**, and **Browser TTS** for a complete health support experience
+**Aries** is an intelligent health assistant that provides caring, contextual health advice with natural voice interaction. Built with **HuggingFace Phi-3**, **Flask**, and **Browser TTS** for a complete health support experience.
 
 ---
 
